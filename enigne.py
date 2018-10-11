@@ -23,8 +23,8 @@ class Engine:
     def set_training_players(self, players=(), player_pools=()):
         self._validate_player_list(players, player_pools)
 
-        self.players = players
-        self.player_pools = player_pools
+        self.train_players = players
+        self.train_player_pools = player_pools
 
     def set_testing_players(self, players=(), player_pools=()):
         self._validate_player_list(players, player_pools)
