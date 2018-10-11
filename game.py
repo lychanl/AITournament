@@ -42,3 +42,48 @@ class Game:
     """
     def get_game_result(self, player):
         raise NotImplementedError
+
+
+class FiniteTurnGameLogic:
+    """ Class for games that are:
+        - not random,
+        - turn-based (no concurrent moves) and
+        - have finite moves set for each state
+        - every player has full knowledge about game state
+    """
+
+    """
+    returns: player that is supposed to make next move
+    """
+    def get_current_player(self, game_view):
+        raise NotImplementedError
+
+    """
+    returns: list of moves available to current player 
+    """
+    def list_moves(self, game_view):
+        raise NotImplementedError
+
+    """
+    returns: if a view is a terminal state for the game
+    """
+    def is_view_terminal(self, game_view):
+        raise NotImplementedError
+
+    """ Calculates new view assuming that current player made given move
+    
+    args:
+        game_view: current view
+        move: move selected by current player
+        
+    returns: new game view after applying move
+    """
+    def apply_move(self, game_view, move):
+        raise NotImplementedError
+
+    """ Evaluates view (returns comparable object) from point of view of given player
+    (with expectation that the higher is the evaluation the better is the situation)
+    """
+    def evaluate_view(self, view, viewpoint_player):
+        raise NotImplementedError
+
