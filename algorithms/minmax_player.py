@@ -9,24 +9,24 @@ class MinMaxPlayer(player.Player):
     where all other players pick worst possible moves for this one.
     """
 
-    """ Creates instance of player
-    that makes moves according to the MinMax algorithm
-
-    args:
-        game_logic - an object that implements FiniteTurnGameLogic interface
-        depth - integer > 0, depth of analysis - 1 means that only next move will be evaluated,
-                2 that also next player's move will be etc
-    """
     def __init__(self, game_logic, depth):
+        """ Creates instance of player
+        that makes moves according to the MinMax algorithm
+
+        args:
+            game_logic - an object that implements FiniteTurnGameLogic interface
+            depth - integer > 0, depth of analysis - 1 means that only next move will be evaluated,
+                    2 that also next player's move will be etc
+        """
         super(MinMaxPlayer, self).__init__()
 
         self._game_logic = game_logic
         self.depth = depth
 
-    """ Returns next move based on MinMax algorithm.
-    If multiple moves are equally good, returns 
-    """
     def get_next_move(self):
+        """ Returns next move based on MinMax algorithm.
+        If multiple moves are equally good, returns
+        """
         best_value = None
         best_moves = None
 

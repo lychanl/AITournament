@@ -12,11 +12,11 @@ class Game:
             player.set_player_id(player_id)
             player_id += 1
 
-    """ Returned value must contain at least one of:
-        players_number - integer
-        max_players_number and min_players_number - integer
-    """
     def get_game_info(self):
+        """ Returned value must contain at least one of:
+            players_number - integer
+            max_players_number and min_players_number - integer
+        """
         raise NotImplementedError
 
     def get_player_view(self, player):
@@ -28,19 +28,19 @@ class Game:
     def get_player_id(self, player):
         return self._player_ids[player]
 
-    """ 
-    Args:
-        moves - dictionary with players as keys
-    """
     def set_players_moves(self, moves):
+        """
+        Args:
+            moves - dictionary with players as keys
+        """
         raise NotImplementedError
 
     def is_game_over(self):
         raise NotImplementedError
 
-    """ Must be comparable if is to be used with some player pools
-    """
     def get_game_result(self, player):
+        """ Must be comparable if is to be used with some player pools
+        """
         raise NotImplementedError
 
 
@@ -52,38 +52,38 @@ class FiniteTurnGameLogic:
         - every player has full knowledge about game state
     """
 
-    """
-    returns: player that is supposed to make next move
-    """
     def get_current_player(self, game_view):
+        """
+        returns: player that is supposed to make next move
+        """
         raise NotImplementedError
 
-    """
-    returns: list of moves available to current player 
-    """
     def list_moves(self, game_view):
+        """
+        returns: list of moves available to current player
+        """
         raise NotImplementedError
 
-    """
-    returns: if a view is a terminal state for the game
-    """
     def is_view_terminal(self, game_view):
+        """
+        returns: if a view is a terminal state for the game
+        """
         raise NotImplementedError
 
-    """ Calculates new view assuming that current player made given move
-    
-    args:
-        game_view: current view
-        move: move selected by current player
-        
-    returns: new game view after applying move
-    """
     def apply_move(self, game_view, move):
+        """ Calculates new view assuming that current player made given move
+
+        args:
+            game_view: current view
+            move: move selected by current player
+
+        returns: new game view after applying move
+        """
         raise NotImplementedError
 
-    """ Evaluates view (returns comparable object) from point of view of given player
-    (with expectation that the higher is the evaluation the better is the situation)
-    """
     def evaluate_view(self, view, viewpoint_player):
+        """ Evaluates view (returns comparable object) from point of view of given player
+        (with expectation that the higher is the evaluation the better is the situation)
+        """
         raise NotImplementedError
 

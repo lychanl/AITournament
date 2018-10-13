@@ -32,18 +32,18 @@ class Engine:
         self.test_players = players
         self.test_player_pools = player_pools
 
-    """ Game players will be taken from set list 
-    and remaining will be filled with players from pools,
-    according to the number of game players.
-    From every pool there will be taken equal number of players,
-    up to maximum generated from the pool, at least one from each
-    
-    Args:
-        iterations - number of iterations (full games) of training
-        on_game_complete - None or function that accepts integer, game and a list of players 
-                           and returns truthy or falsey value - if training should continue  
-    """
     def train(self, iterations, on_iteration_complete=None):
+        """ Game players will be taken from set list
+        and remaining will be filled with players from pools,
+        according to the number of game players.
+        From every pool there will be taken equal number of players,
+        up to maximum generated from the pool, at least one from each
+
+        Args:
+            iterations - number of iterations (full games) of training
+            on_game_complete - None or function that accepts integer, game and a list of players
+                               and returns truthy or falsey value - if training should continue
+        """
         for i in range(iterations):
             players = self._prepare_player_list(self.train_players, self.train_player_pools)
             random.shuffle(players)
@@ -71,18 +71,18 @@ class Engine:
                 if not on_iteration_complete(i, self.game, players):
                     break
 
-    """ Game players will be taken from set list 
-    and remaining will be filled with players from pools,
-    according to the number of game players.
-    From every pool there will be taken equal number of players,
-    up to maximum generated from the pool
-    
-    args:
-        iterations - number of iterations (full games) of training
-        on_round_complete - None or function that accepts game and a list of players
-        on_game_complete - None or function that accepts game and a list of players
-    """
     def test(self, on_round_complete=None, on_game_complete=None):
+        """ Game players will be taken from set list
+        and remaining will be filled with players from pools,
+        according to the number of game players.
+        From every pool there will be taken equal number of players,
+        up to maximum generated from the pool
+
+        args:
+            iterations - number of iterations (full games) of training
+            on_round_complete - None or function that accepts game and a list of players
+            on_game_complete - None or function that accepts game and a list of players
+        """
         players = self._prepare_player_list(self.test_players, self.test_player_pools)
         random.shuffle(players)
 
