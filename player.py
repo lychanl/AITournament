@@ -17,4 +17,3 @@ class Player:
 
     def prepare_new_game(self):
         pass
-

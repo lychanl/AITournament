@@ -86,4 +86,3 @@ class FiniteTurnGameLogic:
         (with expectation that the higher is the evaluation the better is the situation)
         """
         raise NotImplementedError
-
