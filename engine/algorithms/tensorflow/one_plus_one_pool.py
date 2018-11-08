@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-from player_pool import PlayerPool
-from player import Player
+from engine.player_pool import PlayerPool
+from engine.player import Player
 
 
 class OnePlusOnePlayerPool(PlayerPool):

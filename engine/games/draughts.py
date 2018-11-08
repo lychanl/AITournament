@@ -1,6 +1,6 @@
 import os
 
-from game import FiniteTurnGameLogic
+from engine.game import FiniteTurnGameLogic
 
 BOARD_SIZE = 10
 PLAYER_EMPTY_MOVES = 15

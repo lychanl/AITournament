@@ -1,9 +1,9 @@
 import random
 
-import player
+import engine.player
 
 
-class MinMaxPlayer(player.Player):
+class MinMaxPlayer(engine.player.Player):
     """ Class that implements MinMax algorithm
     basing on assumption that this player plays against other players
     where all other players pick worst possible moves for this one.
