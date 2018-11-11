@@ -5,10 +5,10 @@ class Engine:
     def __init__(self, game):
         self.game = game
 
-        self.train_players = ()
-        self.train_player_pools = ()
-        self.test_players = ()
-        self.test_player_pools = ()
+        self.train_players = []
+        self.train_player_pools = []
+        self.test_players = []
+        self.test_player_pools = []
 
         game_info = self.game.get_game_info()
 
@@ -18,7 +18,7 @@ class Engine:
             self._min_players = game_info.min_players_number
             self._max_players = game_info.max_players_number
         else:
-            raise AttributeError('Invalid game info: must contain number of players')
+            exit('Invalid game info: must contain number of players')
 
     def set_training_players(self, players=(), player_pools=()):
         self._validate_player_list(players, player_pools)

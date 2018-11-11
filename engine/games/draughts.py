@@ -1,6 +1,7 @@
 import os
+import random
 
-from engine.game import FiniteTurnGameLogic
+from engine.game import Game, FiniteTurnGameLogic, ConstPlayersNGameInfo
 from engine.algorithms.minmax_player import MinMaxPlayer
 
 BOARD_SIZE = 10
@@ -364,6 +365,42 @@ class DraughtsLogic(FiniteTurnGameLogic):
 
 
 LOGIC_INSTANCE = DraughtsLogic()
+
+
+class Draughts(Game):
+    def __init__(self):
+        super(Draughts, self).__init__()
+        self._view = DraughtsView()
+
+    def _prepare_new_game(self):
+        white = random.choice(self._players)
+        black = self._players[0] if self._players[0] != white else self._players[1]
+        self._view.begin(white, black)
+
+    def get_game_info(self):
+        return ConstPlayersNGameInfo(2)
+
+    def get_player_view(self, player):
+        return DraughtsView(self._view, change_pov=player != self._view.pov)
+
+    def get_current_players(self):
+        return [self._view.pov]
+
+    def set_players_moves(self, moves):
+        self._view = LOGIC_INSTANCE.apply_move(self._view, moves[self._view.pov])
+
+    def is_game_over(self):
+        return self._view.is_terminal
+
+    def get_game_result(self, player):
+        """ Returns 1 if won, 0 if draw and -1 if lost
+        """
+        if self._view.winner == player:
+            return 1
+        elif self._view.winner is None:
+            return 0
+        else:
+            return -1
 
 
 class MinMaxDraughtsPlayer(MinMaxPlayer):

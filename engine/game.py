@@ -1,21 +1,26 @@
 class Game:
     def __init__(self):
-        self._player_ids = {}
         self._players = None
 
     def prepare_new_game(self, players):
         self._players = players
 
-        player_id = 0
-        for player in players:
-            self._player_ids[player] = player_id
-            player.set_player_id(player_id)
-            player_id += 1
+        self._prepare_new_game()
+
+    def get_players(self):
+        return self._players
+
+    def _prepare_new_game(self):
+        raise NotImplementedError
 
     def get_game_info(self):
         """ Returned value must contain at least one of:
             players_number - integer
             max_players_number and min_players_number - integer
+
+            Simple implementations:
+                ConstPlayersNGameInfo
+                RangePlayersNGameInfo
         """
         raise NotImplementedError
 
@@ -24,9 +29,6 @@ class Game:
 
     def get_current_players(self):
         raise NotImplementedError
-
-    def get_player_id(self, player):
-        return self._player_ids[player]
 
     def set_players_moves(self, moves):
         """
@@ -42,6 +44,20 @@ class Game:
         """ Must be comparable if is to be used with some player pools
         """
         raise NotImplementedError
+
+    def __str__(self):
+        return "{}.{}".format(type(self).__module__, type(self).__name__)
+
+
+class ConstPlayersNGameInfo:
+    def __init__(self, n):
+        self.players_number = n
+
+
+class RangePlayersNGameInfo:
+    def __init__(self, min_, max_):
+        self.min_players_number = min_
+        self.max_players_number = max_
 
 
 class FiniteTurnGameLogic:
