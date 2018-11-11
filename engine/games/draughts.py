@@ -1,6 +1,7 @@
 import os
 
 from engine.game import FiniteTurnGameLogic
+from engine.algorithms.minmax_player import MinMaxPlayer
 
 BOARD_SIZE = 10
 PLAYER_EMPTY_MOVES = 15
@@ -240,8 +241,6 @@ class DraughtsLogic(FiniteTurnGameLogic):
                     r = dir_row * dist + cur_row
                     cur_field = view.fields[c][r]
 
-                    print(str(c) + " " + str(r))
-
                     if cur_field.player == view.pov and (c, r) != (col, row):  # stepped on own piece
                         break
 
@@ -275,11 +274,9 @@ class DraughtsLogic(FiniteTurnGameLogic):
                         dir_moves = [move for move in dir_moves if len(move) == m_length]
 
                     if m_length > longest:
-                        print("r")
                         moves = dir_moves
                         longest = m_length
                     elif m_length == longest:
-                        print("a")
                         moves += dir_moves
 
         return moves, longest
@@ -364,3 +361,11 @@ class DraughtsLogic(FiniteTurnGameLogic):
             return points_current + 1000
         else:
             return -(points_other + 1000)
+
+
+LOGIC_INSTANCE = DraughtsLogic()
+
+
+class MinMaxDraughtsPlayer(MinMaxPlayer):
+    def __init__(self, depth):
+        super(MinMaxDraughtsPlayer, self).__init__(LOGIC_INSTANCE, depth)

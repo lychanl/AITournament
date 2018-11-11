@@ -39,13 +39,13 @@ class MinMaxPlayer(engine.player.Player):
             elif best_value == value:
                 best_moves.append(move)
 
-        random.choice(best_moves)
+        return random.choice(best_moves)
 
     def _evaluate(self, move, view, current_depth):
         new_view = self._game_logic.apply_move(view, move)
 
         if current_depth == self.depth or self._game_logic.is_view_terminal(new_view):
-            return self._game_logic.evaluate_view(new_view)
+            return self._game_logic.evaluate_view(new_view, self.id)
 
         current_player = self._game_logic.get_current_player(new_view)
 

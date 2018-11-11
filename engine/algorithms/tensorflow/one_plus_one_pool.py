@@ -13,7 +13,9 @@ class OnePlusOnePlayerPool(PlayerPool):
 
         self._session = session
         self._first_player = player_type()
+        self._first_player.session = session
         self._second_player = player_type()
+        self._second_player.session = session
         self._best_player = self._first_player
         self.active_players = 0
 
@@ -84,6 +86,10 @@ class OnePlusOnePlayerPool(PlayerPool):
 
 
 class OnePlusOnePlayer(Player):
+    def __init__(self):
+        super(OnePlusOnePlayer, self).__init__()
+        self.session = None
+
     def get_variable_list(self):
         raise NotImplementedError
 
