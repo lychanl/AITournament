@@ -1,0 +1,27 @@
+players:
+  MinMaxPlayer:
+    module: engine.games.draughts
+    class: MinMaxDraughtsPlayer
+    params:
+      depth: 2
+
+pools:
+  OnePlusOnePool:
+    module: engine.games.tensorflow.draughts
+    class: DraughtsCNNOnePlusOnePool
+    params:
+      session: session
+
+train:
+  pools:
+    - OnePlusOnePool
+
+test:
+  players:
+    - MinMaxPlayer
+  pools:
+    - OnePlusOnePool
+
+game:
+  module: engine.games.draughts
+  class: Draughts
