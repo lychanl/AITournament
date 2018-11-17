@@ -40,9 +40,6 @@ class MinMaxPlayer(engine.player.Player):
             elif best_value == value:
                 best_moves.append(move)
 
-        if best_moves is None:
-            print("d")
-
         return random.choice(best_moves)
 
     def _evaluate(self, move, view, current_depth):

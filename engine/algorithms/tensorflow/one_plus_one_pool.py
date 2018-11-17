@@ -87,7 +87,7 @@ class OnePlusOnePlayerPool(PlayerPool):
                 self.sigma *= self._sigma_proportion
             else:
                 self.sigma /= self._sigma_proportion
-            print(self.sigma)
+
             self._sigma_scaling_t = 0
             self._new_player_wins = 0
 

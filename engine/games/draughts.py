@@ -281,8 +281,6 @@ class DraughtsLogic(FiniteTurnGameLogic):
         return game_view.is_terminal
 
     def apply_move(self, game_view, move):  # without validating length
-        if move is None:
-            print('N')
         assert game_view[move[0]].player == game_view.pov
 
         is_king = game_view[move[0]].is_king
@@ -294,8 +292,7 @@ class DraughtsLogic(FiniteTurnGameLogic):
             row_diff = move_part[1] - coord[1]
 
             assert abs(col_diff) == abs(row_diff) and col_diff != 0
-            if not (game_view[move_part].player is None or move_part == move[0]):  # DEBUG
-                assert game_view[move_part].player is None or move_part == move[0]
+            assert game_view[move_part].player is None or move_part == move[0]
 
             if not is_king:
                 if row_diff <= 0:
