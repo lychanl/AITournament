@@ -1,11 +1,7 @@
 class Player:
     def __init__(self):
-        self.id = None
         self.view = None
         self.name = None
-
-    def set_player_id(self, id_):
-        self.id = id_
 
     def set_current_view(self, view):
         self.view = view
@@ -30,3 +26,15 @@ class Player:
             return "{}: {}.{}".format(self.name, type(self).__module__, type(self).__name__)
         else:
             return "Instance of {}.{}".format(type(self).__module__, type(self).__name__)
+
+
+class ParametrizedPlayer(Player):
+    def __init__(self):
+        super(ParametrizedPlayer, self).__init__()
+        self.session = None
+
+    def get_variable_list(self):
+        raise NotImplementedError
+
+    def get_next_move(self):
+        raise NotImplementedError

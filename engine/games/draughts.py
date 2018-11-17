@@ -37,7 +37,7 @@ class DraughtsView:
                 for column in base_view.fields]
             self.is_terminal = base_view.is_terminal
             self.winner = base_view.winner
-            self.previous_states = dict(base_view.previous_states)
+            self.previous_states = base_view.previous_states.copy()
             self.black = base_view.black
             self.white = base_view.white
 
@@ -62,7 +62,6 @@ class DraughtsView:
 
             if next_move:
                 pov_has_moves = False
-                other_has_moves = False
                 pov_single_king_checker = 0
                 other_single_king_checker = 0
 
@@ -77,20 +76,15 @@ class DraughtsView:
                             if not pov_has_moves:
                                 pov_has_moves = self._can_piece_move(col, row)
 
-                        elif not other_has_moves and field.player == self.other:
+                        elif field.player == self.other:
                             if field.is_king:
                                 other_single_king_checker += 1
                             else:
                                 other_single_king_checker += 2
-                            if not other_has_moves:
-                                other_has_moves = self._can_piece_move(col, row)
 
                 if not pov_has_moves:
                     self.is_terminal = True
                     self.winner = self.other
-                elif not other_has_moves:
-                    self.is_terminal = True
-                    self.winner = self.pov
                 elif pov_single_king_checker == 1 and other_single_king_checker == 1:
                     self.is_terminal = True
                     self.winner = None
@@ -106,10 +100,9 @@ class DraughtsView:
 
     def _encode_state(self):
         state = []
-        for col in range(BOARD_SIZE):
-            offset = 0 if self.fields[col][0].is_dark else 1
-            for in_row in range(BOARD_SIZE // 2):
-                field = self.fields[col][offset + in_row]
+        for col in range(BOARD_SIZE) if self.pov == self.white else reversed(range(BOARD_SIZE)):
+            for row in range(BOARD_SIZE) if self.pov == self.white else reversed(range(BOARD_SIZE)):
+                field = self.fields[col][row]
                 if field.player is not None:
                     state.append((1 if field.is_king else 2) + (0 if field.player == self.pov else 2))
                 else:
@@ -123,9 +116,10 @@ class DraughtsView:
                 c = col + dir_col
                 r = row + dir_row
                 if 0 <= c < BOARD_SIZE and 0 <= r < BOARD_SIZE:
-                    if self.fields[c][r].player is None and (dir_col > 0 or field.is_king):
-                        return True
-                    if self.fields[c][r].player != field.player:
+                    if self.fields[c][r].player is None:
+                        if dir_row > 0 or field.is_king:
+                            return True
+                    elif self.fields[c][r].player != field.player:
                         c += dir_col
                         r += dir_row
                         if 0 <= c < BOARD_SIZE and 0 <= r < BOARD_SIZE:
@@ -143,6 +137,7 @@ class DraughtsView:
                         field.player = white_player
                     elif field_id > BOARD_SIZE // 2:
                         field.player = black_player
+
         self.pov = self.white = white_player
         self.other = self.black = black_player
 
@@ -182,9 +177,9 @@ class DraughtsView:
             ret += "===BLACK==="
         if self.is_terminal:
             if self.winner is not None:
-                ret += "GAME OVER! Winner: " + str(self.winner)
+                ret += os.linesep + "GAME OVER! Winner: " + str(self.winner)
             else:
-                ret += "GAME OVER! DRAW!"
+                ret += os.linesep + "GAME OVER! DRAW!"
 
         return ret
 
@@ -286,6 +281,8 @@ class DraughtsLogic(FiniteTurnGameLogic):
         return game_view.is_terminal
 
     def apply_move(self, game_view, move):  # without validating length
+        if move is None:
+            print('N')
         assert game_view[move[0]].player == game_view.pov
 
         is_king = game_view[move[0]].is_king
@@ -297,7 +294,8 @@ class DraughtsLogic(FiniteTurnGameLogic):
             row_diff = move_part[1] - coord[1]
 
             assert abs(col_diff) == abs(row_diff) and col_diff != 0
-            assert game_view[move_part].player is None or move_part == coord
+            if not (game_view[move_part].player is None or move_part == move[0]):  # DEBUG
+                assert game_view[move_part].player is None or move_part == move[0]
 
             if not is_king:
                 if row_diff <= 0:
@@ -319,7 +317,7 @@ class DraughtsLogic(FiniteTurnGameLogic):
                 was_enemy_piece = False
 
                 for steps in range(1, abs(col_diff)):
-                    skipped = (col_step * steps, row_step * steps)
+                    skipped = (coord[0] + col_step * steps, coord[1] + row_step * steps)
                     if game_view[skipped].player == game_view.other:
                         assert skipped not in removed_pieces_coord
                         assert not was_enemy_piece
@@ -370,9 +368,10 @@ LOGIC_INSTANCE = DraughtsLogic()
 class Draughts(Game):
     def __init__(self):
         super(Draughts, self).__init__()
-        self._view = DraughtsView()
+        self._view = None
 
     def _prepare_new_game(self):
+        self._view = DraughtsView()
         white = random.choice(self._players)
         black = self._players[0] if self._players[0] != white else self._players[1]
         self._view.begin(white, black)
@@ -393,16 +392,52 @@ class Draughts(Game):
         return self._view.is_terminal
 
     def get_game_result(self, player):
-        """ Returns 1 if won, 0 if draw and -1 if lost
+        """ Returns (1, kings, men) if won, (0, 0, 0) if draw and (-1, -kings, -men) if lost
         """
+
+        if self._view.winner is None:
+            return 0, 0, 0
+
+        kings = 0
+        men = 0
+
+        for col in range(BOARD_SIZE):
+            for row in range(BOARD_SIZE):
+                if self._view[(col, row)].player == self._view.winner:
+                    if self._view[(col, row)].is_king:
+                        kings += 1
+                    else:
+                        men += 1
+
         if self._view.winner == player:
-            return 1
-        elif self._view.winner is None:
-            return 0
+            return 1, kings, men
         else:
-            return -1
+            return -1, -kings, -men
 
 
 class MinMaxDraughtsPlayer(MinMaxPlayer):
     def __init__(self, depth):
         super(MinMaxDraughtsPlayer, self).__init__(LOGIC_INSTANCE, depth)
+
+
+def on_test_run_finished(results_by_players, results_by_pools):
+    for player, results in zip(results_by_players.keys(), results_by_players.values()):
+        total = 0
+        for result in results:
+            total += result[1] + result[2]
+
+        total /= len(results)
+
+        print("{} avg: {} ({})".format(player, total, results))
+
+    for pool, results in zip(results_by_pools.keys(), results_by_pools.values()):
+
+        totals = [0 for _ in results[0]]
+        for run_results in results:
+            for i in range(len(run_results)):
+                totals[i] += run_results[i][1] + run_results[i][2]
+
+        totals = [total / len(results) for total in totals]
+
+        print("{} avg: {} ({})".format(pool, totals, results))
+

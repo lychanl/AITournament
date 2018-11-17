@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from engine.player_pool import PlayerPool
-from engine.player import Player
+from engine.player import ParametrizedPlayer
 
 
 class OnePlusOnePlayerPool(PlayerPool):
@@ -10,6 +10,7 @@ class OnePlusOnePlayerPool(PlayerPool):
                  sigma_scaling_interval=10,
                  win_proportion=0.2):
         super(OnePlusOnePlayerPool, self).__init__()
+        assert issubclass(player_type, ParametrizedPlayer)
 
         self._session = session
         self._first_player = player_type()
@@ -19,8 +20,8 @@ class OnePlusOnePlayerPool(PlayerPool):
         self._best_player = self._first_player
         self.active_players = 0
 
-        self._first_player.set_name("{} - Initial player 1".format(self.get_name()))
-        self._second_player.set_name("{} - Initial player 2".format(self.get_name()))
+        self._first_player.set_name("{}: Initial player 1".format(self.get_name()))
+        self._second_player.set_name("{}: Initial player 2".format(self.get_name()))
 
         self._sigma_scaling_interval = sigma_scaling_interval
         self._sigma_scaling_t = 0
@@ -31,8 +32,8 @@ class OnePlusOnePlayerPool(PlayerPool):
         self._sigma_proportion = sigma_proportion
         self._sigma_placeholder = tf.placeholder(tf.float32)
 
-        self._first_player_setter = self._create_setter(self._first_player, self._second_player)
-        self._second_player_setter = self._create_setter(self._second_player, self._first_player)
+        self._from_first_player_setter = self._create_setter(self._first_player, self._second_player)
+        self._from_second_player_setter = self._create_setter(self._second_player, self._first_player)
 
     def max_count(self):
         return 2
@@ -44,7 +45,9 @@ class OnePlusOnePlayerPool(PlayerPool):
         if self.active_players == 0:
             self.active_players = 1
             return self._best_player
-        elif self._best_player is self._first_player:
+
+        self.active_players = 2
+        if self._best_player is self._first_player:
             return self._second_player
         else:
             return self._first_player
@@ -61,11 +64,16 @@ class OnePlusOnePlayerPool(PlayerPool):
             self._new_player_wins += 1
             self._best_player = new_player
 
-        setter = self._second_player_setter if self._best_player is self._first_player else self._first_player_setter
+        setter = self._from_first_player_setter if self._best_player is self._first_player else self._from_second_player_setter
         self._session.run(setter, {self._sigma_placeholder: self.sigma})
 
+        self._best_player.set_name("{}: Best player".format(self.name))
         if self._best_player is self._first_player:
-            self._first_player.set_name("{} - best player")
+            self._second_player.set_name("{}: New player".format(self.name))
+        else:
+            self._first_player.set_name("{}: New player".format(self.name))
+
+        self._scale_sigma()
 
     def prepare_new_game(self):
         self.active_players = 0
@@ -77,9 +85,9 @@ class OnePlusOnePlayerPool(PlayerPool):
 
             if win_proportion > self._win_proportion:
                 self.sigma *= self._sigma_proportion
-            elif win_proportion < self._win_proportion:
+            else:
                 self.sigma /= self._sigma_proportion
-
+            print(self.sigma)
             self._sigma_scaling_t = 0
             self._new_player_wins = 0
 
@@ -89,14 +97,3 @@ class OnePlusOnePlayerPool(PlayerPool):
             for src, dst in zip(source.get_variable_list(), dest.get_variable_list())
         ])
 
-
-class OnePlusOnePlayer(Player):
-    def __init__(self):
-        super(OnePlusOnePlayer, self).__init__()
-        self.session = None
-
-    def get_variable_list(self):
-        raise NotImplementedError
-
-    def get_next_move(self):
-        raise NotImplementedError

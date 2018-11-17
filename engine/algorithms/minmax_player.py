@@ -1,6 +1,7 @@
 import random
 
 import engine.player
+import engine.player_pool
 
 
 class MinMaxPlayer(engine.player.Player):
@@ -39,23 +40,26 @@ class MinMaxPlayer(engine.player.Player):
             elif best_value == value:
                 best_moves.append(move)
 
+        if best_moves is None:
+            print("d")
+
         return random.choice(best_moves)
 
     def _evaluate(self, move, view, current_depth):
         new_view = self._game_logic.apply_move(view, move)
 
         if current_depth == self.depth or self._game_logic.is_view_terminal(new_view):
-            return self._game_logic.evaluate_view(new_view, self.id)
+            return self._game_logic.evaluate_view(new_view, self)
 
         current_player = self._game_logic.get_current_player(new_view)
 
         best_value = None
         for move in self._game_logic.list_moves(new_view):
-            value = self._evaluate(move, self.view, current_depth + 1)
+            value = self._evaluate(move, new_view, current_depth + 1)
 
             if best_value is None or \
-                    current_player == self.id and value > best_value or \
-                    current_player != self.id and value < best_value:
+                    current_player == self and value > best_value or \
+                    current_player != self and value < best_value:
                 best_value = value
 
         return best_value

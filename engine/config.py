@@ -5,6 +5,7 @@ import importlib.util
 import engine.player
 import engine.player_pool
 import engine.game
+import engine.events
 
 
 def get_configuration():
@@ -81,6 +82,51 @@ class Configuration:
             exit("Game is not configured")
         self.game = self._parse_game(config_file["game"])
 
+        # default event handlers
+        self.on_start = engine.events.default_on_start
+        self.on_finished = engine.events.default_on_finished
+        self.on_epoch_started = engine.events.default_on_epoch_started
+        self.on_test_game_finished = self.on_train_game_finished = None
+        self.on_train_run_finished = None
+        self.on_test_run_finished = engine.events.default_on_test_run_finished
+        self.on_test_step = self.on_train_step = None
+
+        if "events" in config_file:
+            self._parse_events(config_file["events"])
+
+    def _parse_events(self, events_config):
+        for event, config in zip(events_config.keys(), events_config.values()):
+            parsed = self._parse_event(event, config)
+            if event == "on_start":
+                self.on_start = parsed
+            elif event == "on_epoch_started":
+                self.on_epoch_started = parsed
+            elif event == "on_finished":
+                self.on_finished = parsed
+
+            elif event == "on_test_step":
+                self.on_test_step = parsed
+            elif event == "on_test_game_finished":
+                self.on_test_game_finished = parsed
+            elif event == "on_test_run_finished":
+                self.on_test_run_finished = parsed
+
+            elif event == "on_train_step":
+                self.on_train_step = parsed
+            elif event == "on_train_game_finished":
+                self.on_train_game_finished = parsed
+            elif event == "on_train_run_finished":
+                self.on_train_run_finished = parsed
+
+            else:
+                exit("Unrecognized event: {}".format(event))
+
+    def _parse_event(self, name, event_config):
+        if "module" not in event_config or "func" not in event_config:
+            exit("Module or function is not defined for {}".format(name))
+
+        return self._symbol_getter(event_config["module"], event_config["func"])
+
     def _parse_modules(self, modules_config):
         if modules_config is None:
             return
@@ -125,14 +171,14 @@ class Configuration:
 
         ret = {}
         for name, conf in zip(config.keys(), config.values()):
-            ret[name] = ObjectConfig(name, conf, self._class_getter, self._obj_getter, class_)
+            ret[name] = ObjectConfig(name, conf, self._symbol_getter, self._obj_getter, class_)
 
         return ret
 
     def _parse_game(self, game_config):
-        return ObjectConfig("Game", game_config, self._class_getter, self._obj_getter, engine.game.Game)
+        return ObjectConfig("Game", game_config, self._symbol_getter, self._obj_getter, engine.game.Game)
 
-    def _class_getter(self, module, name):
+    def _symbol_getter(self, module, name):
         if module not in self.modules:
             self._import_module(module, None)
 

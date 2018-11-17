@@ -1,41 +1,13 @@
 from engine.config import get_configuration
-
-
-def log_info(config, game, train_players, train_pools, test_players, test_pools):
-    print("Run info:\n")
-    print("Game: {}".format(game))
-    print("Epochs: {}".format(config.epochs))
-
-    print("\nTraining runs per epoch: {}".format(config.train_runs))
-    if config.train_runs > 0:
-        if len(train_players) > 0:
-            print("Trained players:")
-            for player in train_players:
-                print(" - {}".format(player))
-        if len(train_pools) > 0:
-            print("Trained player pools:")
-            for pool in train_pools:
-                print(" - {}".format(pool))
-
-    print("\nTesting runs per epoch: {}".format(config.test_runs))
-    if config.test_runs > 0:
-        if len(test_players) > 0:
-            print("Tested players:")
-            for player in test_players:
-                print(" - {}".format(player))
-        if len(test_pools) > 0:
-            print("Tested player pools:")
-            for pool in test_pools:
-                print(" - {}".format(pool))
-
-
-tf = None
+from engine.enigne import Engine
 
 
 def create_tf_session(session_wrapper):
     if session_wrapper is not None:
         import tensorflow
-        session_wrapper.session = tensorflow.Session()
+        config = tensorflow.ConfigProto()
+        config.gpu_options.allow_growth = True
+        session_wrapper.session = tensorflow.Session(config=config)
 
 
 def prepare_tf_session(session_wrapper):
@@ -62,9 +34,36 @@ def main():
         test_players = [pl.create() for pl in config.test_players]
         test_pools = [pl.create() for pl in config.test_pools]
 
-        log_info(config, game, train_players, train_pools, test_players, test_pools)
-
         prepare_tf_session(config.tf_session_wrapper)
+
+        if config.on_start:
+            config.on_start(config, game, train_players, train_pools, test_players, test_pools)
+
+        engine = Engine(game)
+        engine.set_testing_players(test_players, test_pools)
+        engine.set_training_players(train_players, train_pools)
+
+        engine.test(config.test_runs,
+                    config.on_test_run_finished,
+                    config.on_test_game_finished,
+                    config.on_test_step)
+
+        for i in range(config.epochs):
+            if config.on_epoch_started:
+                config.on_epoch_started(i)
+
+            engine.train(config.train_runs,
+                         config.on_train_run_finished,
+                         config.on_train_game_finished,
+                         config.on_train_step)
+
+            engine.test(config.test_runs,
+                        config.on_test_run_finished,
+                        config.on_test_game_finished,
+                        config.on_test_step)
+
+        if config.on_finished:
+            config.on_finished()
     finally:
         close_tf_session(config.tf_session_wrapper)
 
