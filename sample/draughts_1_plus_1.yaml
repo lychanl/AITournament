@@ -3,28 +3,26 @@ players:
     module: engine.games.draughts
     class: MinMaxDraughtsPlayer
     params:
-      depth: 2
+      depth: 1
 
 pools:
-  EvolutionPool:
+  OnePlusOnePool:
     module: engine.games.tensorflow.draughts
-    class: DraughtsEvolutionWithMutationPool
+    class: DraughtsCNNOnePlusOnePool
     params:
       session: session
-      stddev: 0.1
-      pool_size: 10
-      tournament_size: 4
+      win_proportion: 0.4
 
 
 train:
   pools:
-    - EvolutionPool
+    - OnePlusOnePool
 
 test:
   players:
     - MinMaxPlayer
   pools:
-    - EvolutionPool
+    - OnePlusOnePool
 
 game:
   module: engine.games.draughts
